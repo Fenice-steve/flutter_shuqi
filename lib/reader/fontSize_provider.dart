@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class fontSize with ChangeNotifier{
 
-  double _fontSizeSet = 0.0;
+  double _fontSizeSet = 10.0;
   double get fontSizeSet => _fontSizeSet;
 
   void setFontSize(font_size){

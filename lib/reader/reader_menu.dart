@@ -8,6 +8,7 @@ import 'package:shuqi/reader/reader_scene.dart';
 import 'package:screen/screen.dart' as lightScreen;
 import 'package:provider/provider.dart';
 import 'fontSize_provider.dart';
+import 'change_night_provider.dart';
 
 class ReaderMenu extends StatefulWidget {
   final List<Chapter> chapters;
@@ -134,10 +135,17 @@ class _ReaderMenuState extends State<ReaderMenu>
               /// 改为汉字
               child: Text("加入书架", style: TextStyle(color: SQColor.white)),
             ),
-            Container(
-              width: 44,
-              child: Icon(Icons.more_vert, color: SQColor.white),
-            ),
+//            GestureDetector(
+//              onTap: (){
+//                onPopMenu();
+//              },
+//              child:
+
+              Container(
+                width: 44,
+                child: onPopMenu(),
+              ),
+//            )
           ],
         ),
       ),
@@ -280,7 +288,6 @@ class _ReaderMenuState extends State<ReaderMenu>
 //            Navigator.of(context).pop();
 //          hide();
             animationController.reverse();
-            SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top]);
 
             widget._scaffoldKey.currentState.openDrawer();
           },
@@ -316,7 +323,12 @@ class _ReaderMenuState extends State<ReaderMenu>
                           style:
                               TextStyle(color: Color(0xFFCCCCCC), fontSize: 20),
                         ),
-                        isOnTapButton()
+                        isOnTapButton(
+                          title: "护眼模式",
+                        ),
+                        isOnTapButton(
+                          title: "夜间模式",
+                        )
                       ],
                     )),
                 Container(
@@ -333,7 +345,17 @@ class _ReaderMenuState extends State<ReaderMenu>
                     )),
                 _SettingMenuScreenBrightItem(),
                 SettingFontSize(),
-                SettingFontSpace()
+                SettingFontSpace(),
+                Container(
+                  child: Row(
+                    children: <Widget>[
+                      Text("背景",
+                          style: TextStyle(
+                              color: Color(0xFFCCCCCC), fontSize: 20)),
+                      CircleSelectBotton()
+                    ],
+                  ),
+                )
               ],
             ),
           );
@@ -360,23 +382,27 @@ class _ReaderMenuState extends State<ReaderMenu>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return
+      Scaffold(
         backgroundColor: Colors.transparent,
         key: widget._scaffoldKey,
         drawer: DrawLayout(),
         drawerEnableOpenDragGesture: false,
-        body: Stack(
-          children: <Widget>[
-            GestureDetector(
-              onTapDown: (_) {
-                hide();
-              },
-              child: Container(color: Colors.transparent),
-            ),
-            buildTopView(context),
-            buildBottomView(),
-          ],
-        ));
+        body:
+
+        Stack(
+      children: <Widget>[
+        GestureDetector(
+          onTapDown: (_) {
+            hide();
+          },
+          child: Container(color: Colors.transparent),
+        ),
+        buildTopView(context),
+        buildBottomView(),
+      ],
+    )
+    );
   }
 }
 
@@ -589,6 +615,10 @@ class _SettingFontSpaceState extends State<SettingFontSpace> {
 /// 封装一个是否点击的按钮
 
 class isOnTapButton extends StatefulWidget {
+  final String title;
+
+  const isOnTapButton({Key key, this.title}) : super(key: key);
+
   @override
   _isOnTapButtonState createState() => _isOnTapButtonState();
 }
@@ -610,6 +640,7 @@ class _isOnTapButtonState extends State<isOnTapButton> {
           } else {
             isTap = true;
           }
+          Provider.of<NightChange>(context, listen: false).isTapButton(isTap);
         });
       },
       child: Container(
@@ -623,7 +654,7 @@ class _isOnTapButtonState extends State<isOnTapButton> {
         ),
         alignment: Alignment.center,
         child: Text(
-          "护眼模式",
+          widget.title,
           style: TextStyle(
               color: isTap ? Color(0xFF1C8AEC) : Color(0xFF8F8F8F),
               fontSize: 15),
@@ -631,4 +662,35 @@ class _isOnTapButtonState extends State<isOnTapButton> {
       ),
     );
   }
+}
+
+Widget CircleSelectBotton() {
+  return GestureDetector(
+    child: Container(
+//      padding: EdgeInsets.fromLTRB(15, 5, 15, 5),
+      height: 35,
+      width: 35,
+      decoration: BoxDecoration(
+        border: Border.all(color: Color(0xFFFF0000), width: 5),
+//          borderRadius: BorderRadius.all()
+      ),
+      child: ClipOval(child: RaisedButton(onPressed: () {})),
+    ),
+  );
+}
+
+
+
+/// 右上角弹出菜单
+Widget onPopMenu(){
+  return PopupMenuButton(itemBuilder:  (BuildContext context) => <PopupMenuItem<String>>[
+    new PopupMenuItem<String>(
+        value: 'value01', child: new Text('Item One')),
+    new PopupMenuItem<String>(
+        value: 'value02', child: new Text('Item Two')),
+    new PopupMenuItem<String>(
+        value: 'value03', child: new Text('Item Three')),
+    new PopupMenuItem<String>(
+        value: 'value04', child: new Text('I am Item Four'))
+  ]);
 }
