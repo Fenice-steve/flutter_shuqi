@@ -12,6 +12,7 @@ import 'reader_page_agent.dart';
 import 'reader_menu.dart';
 import 'reader_view.dart';
 
+
 enum PageJumpType { stay, firstPage, lastPage }
 
 class ReaderScene extends StatefulWidget {
@@ -25,7 +26,7 @@ class ReaderScene extends StatefulWidget {
 
 class ReaderSceneState extends State<ReaderScene> with RouteAware {
   int pageIndex = 0;
-  bool isMenuVisiable = false;
+  static bool isMenuVisiable = false;
   PageController pageController = PageController(keepPage: false);
   bool isLoading = false;
 
@@ -53,7 +54,8 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
 
   @override
   void didPop() {
-    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
+//    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
+    SystemChrome.setEnabledSystemUIOverlays([]);
   }
 
   @override
@@ -65,8 +67,10 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
 
   void setup() async {
     await SystemChrome.setEnabledSystemUIOverlays([]);
+//    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
+
     // 不延迟的话，安卓获取到的topSafeHeight是错的。
-    await Future.delayed(const Duration(milliseconds: 100), () {});
+    await Future.delayed(const Duration(milliseconds: 1000), () {});
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
     topSafeHeight = Screen.topSafeHeight;
@@ -164,7 +168,8 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
   onTap(Offset position) async {
     double xRate = position.dx / Screen.width;
     if (xRate > 0.33 && xRate < 0.66) {
-      SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
+//      SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
+      SystemChrome.setEnabledSystemUIOverlays([]);
       setState(() {
         isMenuVisiable = true;
       });
@@ -217,6 +222,7 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
 
     return GestureDetector(
       onTapUp: (TapUpDetails details) {
+
         onTap(details.globalPosition);
       },
       child: ReaderView(article: article, page: page, topSafeHeight: topSafeHeight),
@@ -261,7 +267,7 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
   hideMenu() {
     SystemChrome.setEnabledSystemUIOverlays([]);
     setState(() {
-      this.isMenuVisiable = false;
+      ReaderSceneState.isMenuVisiable = false;
     });
   }
 
@@ -273,7 +279,7 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
 
     return Scaffold(
       body: AnnotatedRegion(
-        value: SystemUiOverlayStyle.dark,
+        value: SystemUiOverlayStyle.light,
         child: Stack(
           children: <Widget>[
             Positioned(left: 0, top: 0, right: 0, bottom: 0, child: Image.asset('img/read_bg.png', fit: BoxFit.cover)),
