@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:shuqi/public.dart';
+import 'package:shuqi/reader/back_color_change_provider.dart';
 import 'reader_overlayer.dart';
 import 'reader_utils.dart';
 import 'reader_config.dart';
@@ -29,8 +30,13 @@ class ReaderView extends StatelessWidget {
             right: 0,
             bottom: 0,
             child: Container(
-                color: Provider.of<NightChange>(context, listen: true)
-                    .isTapColor)),
+                color:
+
+                Provider.of<BackgroundColor>(context, listen: true)
+                    .isTapColor
+//            Colors.white
+
+            )),
         ReaderOverlayer(
             article: article, page: page, topSafeHeight: topSafeHeight),
 
@@ -63,7 +69,8 @@ class ReaderView extends StatelessWidget {
 //            fontSize: fixedFontSize(ReaderConfig.instance.fontSize)
                     fontSize: Provider.of<fontSize>(context, listen: true)
                         .fontSizeSet,
-                    color: Colors.white,
+                    color: Provider.of<BackgroundColor>(context, listen: true)
+                        .isChangeTextColor,
 
                     /// 这里修改间距
                     height: Provider.of<FontSpace>(context, listen: true)
