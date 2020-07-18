@@ -6,6 +6,7 @@ import 'package:shuqi/novel_detail/novel_detail_scene.dart';
 import 'package:shuqi/me/login_scene.dart';
 import 'package:shuqi/me/web_scene.dart';
 import 'package:shuqi/reader/reader_scene.dart';
+import 'package:shuqi/reader/scroll_page.dart';
 
 class AppNavigator {
   static push(BuildContext context, Widget scene) {
@@ -36,6 +37,7 @@ class AppNavigator {
   static pushReader(BuildContext context, int articleId) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return ReaderScene(articleId: articleId);
+//      return ScrollPageFlip(articleId: articleId,);
     }));
   }
 }

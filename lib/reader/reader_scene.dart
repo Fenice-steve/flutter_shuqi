@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:shuqi/public.dart';
+import 'package:shuqi/reader/reader_menu_chapter.dart';
 
 import 'article_provider.dart';
 import 'reader_utils.dart';
@@ -26,8 +27,10 @@ class ReaderScene extends StatefulWidget {
 class ReaderSceneState extends State<ReaderScene> with RouteAware {
   int pageIndex = 0;
   static bool isMenuVisiable = false;
+
+  bool isMenuChapterVisible = false;
+
   PageController pageController = PageController(keepPage: false);
-  /// 上下翻页
 
   bool isLoading = false;
 
@@ -69,10 +72,11 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
   void setup() async {
     await SystemChrome.setEnabledSystemUIOverlays([]);
 //    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
 
     // 不延迟的话，安卓获取到的topSafeHeight是错的。
     await Future.delayed(const Duration(milliseconds: 200), () {});
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
 
     topSafeHeight = Screen.topSafeHeight;
 
@@ -174,11 +178,13 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
     return article;
   }
 
+  /// 判断点击区域
   onTap(Offset position) async {
     double xRate = position.dx / Screen.width;
     if (xRate > 0.33 && xRate < 0.66) {
 //      SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
-      SystemChrome.setEnabledSystemUIOverlays([]);
+      /// 恢复状态栏
+      SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
       setState(() {
         isMenuVisiable = true;
       });
@@ -189,6 +195,7 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
     }
   }
 
+  /// 改变页数
   onPageChanged(int index) {
     var page = index - (preArticle != null ? preArticle.pageCount : 0);
     if (page < currentArticle.pageCount && page >= 0) {
@@ -198,6 +205,7 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
     }
   }
 
+  /// 上一页
   previousPage() {
     if (pageIndex == 0 && currentArticle.preArticleId == 0) {
       Toast.show('已经是第一页了');
@@ -207,6 +215,7 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
         duration: Duration(milliseconds: 250), curve: Curves.easeOut);
   }
 
+  /// 下一页
   nextPage() {
     if (pageIndex >= currentArticle.pageCount - 1 &&
         currentArticle.nextArticleId == 0) {
@@ -217,6 +226,7 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
         duration: Duration(milliseconds: 250), curve: Curves.easeOut);
   }
 
+  /// PageView的每一页内容
   Widget buildPage(BuildContext context, int index) {
     var page = index - (preArticle != null ? preArticle.pageCount : 0);
     var article;
@@ -241,6 +251,7 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
     );
   }
 
+  /// 阅读页
   buildPageView() {
     if (currentArticle == null) {
       return Container();
@@ -257,24 +268,24 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
       onPageChanged: onPageChanged,
     );
 
-//  return
-//    Expanded(child:  ListView.builder(
-//
-//        itemCount: itemCount,
-//        itemBuilder: buildPage
-//
-//
-//    ));
-//
-
-
   }
 
+  /// 上下浮层菜单
   buildMenu() {
     if (!isMenuVisiable) {
       return Container();
     }
     return ReaderMenu(
+      onTypeTap: (int type){
+        switch(type){
+          case 1:
+            setState(() {
+              isMenuVisiable=false;
+              isMenuChapterVisible=true;
+            });
+        }
+
+      },
       chapters: chapters,
       articleIndex: currentArticle.index,
       onTap: hideMenu,
@@ -290,10 +301,27 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
     );
   }
 
+  /// 隐藏菜单
   hideMenu() {
     SystemChrome.setEnabledSystemUIOverlays([]);
     setState(() {
       ReaderSceneState.isMenuVisiable = false;
+    });
+  }
+
+
+  Widget buildMenuChapter() {
+    if(!isMenuChapterVisible) {
+      return Container();
+    }
+
+    return ReaderMenuChapter((int type, int value){
+      if(type == 1) {
+        setState(() {
+          isMenuChapterVisible = !isMenuChapterVisible;
+        });
+      }
+
     });
   }
 
@@ -305,7 +333,7 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
 
     return Scaffold(
       body: AnnotatedRegion(
-          value: SystemUiOverlayStyle.light,
+          value: SystemUiOverlayStyle.dark,
           child: Stack(
             children: <Widget>[
               Positioned(
@@ -316,6 +344,7 @@ class ReaderSceneState extends State<ReaderScene> with RouteAware {
                   child: Image.asset('img/read_bg.png', fit: BoxFit.cover)),
               buildPageView(),
               buildMenu(),
+              buildMenuChapter()
             ],
           )),
     );

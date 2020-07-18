@@ -8,14 +8,13 @@ import 'package:shuqi/reader/back_color_change_provider.dart';
 import 'package:shuqi/reader/circle_select_button.dart';
 import 'package:shuqi/reader/fontSpace_provider.dart';
 import 'package:shuqi/reader/font_size_button.dart';
-import 'package:shuqi/reader/reader_drawer.dart';
-import 'package:shuqi/reader/reader_scene.dart';
 import 'package:screen/screen.dart' as lightScreen;
 import 'package:provider/provider.dart';
+import 'package:shuqi/reader/novel_config_manager.dart';
 import 'fontSize_provider.dart';
-import 'change_night_provider.dart';
 
 class ReaderMenu extends StatefulWidget {
+  final void Function(int) onTypeTap;
   List<Chapter> chapters = [];
   final int articleIndex;
 
@@ -32,15 +31,16 @@ class ReaderMenu extends StatefulWidget {
   /// 目录选择的 item 索引
   int index = 0;
 
-  ReaderMenu(
-      {this.chapters,
-      this.articleIndex,
-      this.onTap,
-      this.onPreviousArticle,
-      this.onNextArticle,
-      this.onToggleChapter,
-      this.isReversed,
-      this.index});
+  ReaderMenu({
+    this.onTypeTap,
+    this.chapters,
+    this.articleIndex,
+    this.onTap,
+    this.onPreviousArticle,
+    this.onNextArticle,
+    this.onToggleChapter,
+    this.isReversed,
+    this.index});
 
   @override
   _ReaderMenuState createState() => _ReaderMenuState();
@@ -53,6 +53,7 @@ class _ReaderMenuState extends State<ReaderMenu>
 
   double progressValue;
   bool isTipVisible = false;
+
 
   @override
   initState() {
@@ -212,8 +213,6 @@ class _ReaderMenuState extends State<ReaderMenu>
             onTap: previousArticle,
             child: Container(
               padding: EdgeInsets.all(20),
-//              child: Image.asset('img/read_icon_chapter_previous.png'),
-              /// 改为汉字
               child: Text(
                 "上一章",
                 style: TextStyle(color: SQColor.white),
@@ -241,8 +240,6 @@ class _ReaderMenuState extends State<ReaderMenu>
             onTap: nextArticle,
             child: Container(
               padding: EdgeInsets.all(20),
-//              child: Image.asset('img/read_icon_chapter_next.png'),
-              /// 改为汉字
               child: Text(
                 "下一章",
                 style: TextStyle(color: SQColor.white),
@@ -284,15 +281,12 @@ class _ReaderMenuState extends State<ReaderMenu>
       children: <Widget>[
         GestureDetector(
           onTap: () {
-//            Navigator.of(context).pop();
-//          hide();
-//            animationController.reverse();
-
-            widget._scaffoldKey.currentState.openDrawer();
-//            openDrawer().then((value) => (){
-//              debugPrint("点击打开了抽屉");
+//            setState(() {
+//              isTipVisible=false;
 //            });
+          this.widget.onTypeTap(1);
           },
+
           child: buildBottomItem('目录', 'img/read_icon_catalog.png'),
         ),
         buildBottomItem('亮度', 'img/read_icon_brightness.png'),
@@ -311,19 +305,19 @@ class _ReaderMenuState extends State<ReaderMenu>
   Future openDrawer() async {
 //    Timer(Duration(milliseconds: 300), () {
     Future.delayed(
-      Duration(milliseconds: 300),
+        Duration(seconds: 3), () {
+      widget._scaffoldKey.currentState.openDrawer();
+    }
     );
-    widget._scaffoldKey.currentState.openDrawer();
+    print("延迟三秒执行");
 //    });
   }
 
+  /// 底部抽屉
   void showBottomDialog() {
-//    Color _tapLargeSpaceColor = Provider.of<FontSpace>(context, listen: true)
-//        .tapLargeFontSpace ? Color(0xFF1C8AEC) : Color(0xFFF6F6F6);
-//    Color _tapMidSpaceColor = Provider.of<FontSpace>(context, listen: true)
-//        .tapMidFontSpace ? Color(0xFF1C8AEC) : Color(0xFFF6F6F6);
-//    Color _tapSmallSpaceColor = Provider.of<FontSpace>(context, listen: true)
-//        .tapSmallFontSpace ? Color(0xFF1C8AEC) : Color(0xFFF6F6F6);
+    bool isTapNightChange = Provider
+        .of<BackgroundColor>(context, listen: false)
+        .isSelectedBlackBack;
 
     showModalBottomSheet(
         context: context,
@@ -332,191 +326,332 @@ class _ReaderMenuState extends State<ReaderMenu>
             height: Screen.height / 2,
             color: Color(0xFF292929),
             child: Column(
+//              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 Container(
-                    padding: EdgeInsets.fromLTRB(20, 10, 0, 10),
+                    margin: EdgeInsets.only(left: 15, top: 20),
                     child: Row(
                       children: <Widget>[
                         Text(
                           "模式",
                           style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
-                        isOnTapButton(
+                        IsOnTapButton(
+                          isTap: false,
                           title: "护眼模式",
                         ),
-                        isOnTapButton(
+                        IsOnTapButton(
+                          onTap: () {
+                            if (Provider
+                                .of<BackgroundColor>(context,
+                                listen: false)
+                                .isSelectedBlackBack) {
+                              isTapNightChange = false;
+                              Provider.of<BackgroundColor>(context,
+                                  listen: false)
+                                  .isTapButton("yellow");
+                            } else {
+                              isTapNightChange = true;
+                              Provider.of<BackgroundColor>(context,
+                                  listen: false)
+                                  .isTapButton("black");
+                            }
+                          },
                           title: "夜间模式",
+                          isTap: Provider
+                              .of<BackgroundColor>(context,
+                              listen: false)
+                              .isSelectedBlackBack,
                         )
                       ],
                     )),
                 Container(
-                    padding: EdgeInsets.fromLTRB(20, 10, 0, 10),
+                    margin: EdgeInsets.only(left: 15, top: 20),
                     child: Row(
                       children: <Widget>[
                         Text(
                           "亮度",
-                          style:
-                              TextStyle(color: Color(0xFFCCCCCC), fontSize: 20),
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
-//                        _SettingMenuScreenBrightItem()
+                        _SettingMenuScreenBrightItem()
                       ],
                     )),
-                _SettingMenuScreenBrightItem(),
+//                _SettingMenuScreenBrightItem(),
                 Container(
-                  margin: EdgeInsets.only(left: 10, top: 15),
+                  margin: EdgeInsets.only(left: 15, top: 20, right: 15),
                   child: Row(
                     children: <Widget>[
                       Text("字号",
                           style: TextStyle(color: Colors.grey, fontSize: 16)),
-                      SetFontSizeButton(
-                        title: "A-",
-                        isTapFinish:
-                            Provider.of<fontSize>(context, listen: true)
-                                .tapToMin,
-                        onTap: () {
-                          Provider.of<fontSize>(context, listen: false)
-                              .downFontSize();
-                        },
-                      ),
-                      SetFontSizeButton(
-                          title: "A+",
-                          isTapFinish:
-                              Provider.of<fontSize>(context, listen: true)
-                                  .tapToMax,
-                          onTap: () {
-                            Provider.of<fontSize>(context, listen: false)
-                                .addFontSize();
-                          }),
+                      Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: <Widget>[
+                              SetFontSizeButton(
+                                title: "A-",
+                                isTapFinish:
+                                Provider
+                                    .of<fontSize>(context, listen: true)
+                                    .tapToMin,
+                                onTap: () {
+                                  Provider.of<fontSize>(context, listen: false)
+                                      .downFontSize();
+                                },
+                              ),
+                              SetFontSizeButton(
+                                  title: "A+",
+                                  isTapFinish:
+                                  Provider
+                                      .of<fontSize>(context, listen: true)
+                                      .tapToMax,
+                                  onTap: () {
+                                    Provider.of<fontSize>(
+                                        context, listen: false)
+                                        .addFontSize();
+                                  }),
+                            ],
+                          ))
                     ],
                   ),
                 ),
                 Container(
-                  margin: EdgeInsets.only(left: 10, top: 15),
+                  margin: EdgeInsets.only(left: 15, top: 15, right: 15),
                   child: Row(
                     children: <Widget>[
                       Text("背景",
                           style: TextStyle(color: Colors.grey, fontSize: 16)),
-                      CircleSelectButton(
-                        onTap: () {
-                          Provider.of<BackgroundColor>(context, listen: false)
-                              .isTapButton("white");
-                        },
-                        innerWidget: Container(
-                          color: Color(0xFFF6F6F6),
-                        ),
-                        isSelected: true,
-                        selectedColor: Color(0xFFDED9C5),
-                      ),
-                      CircleSelectButton(
-                        onTap: () {
-                          Provider.of<BackgroundColor>(context, listen: false)
-                              .isTapButton("yellow");
-                        },
-                        selectedColor: Color(0xFFDED9C5),
-                        innerWidget: Container(
-                          color: Color(0xFFDED9C5),
-                        ),
-                        isSelected: true,
-                      ),
-                      CircleSelectButton(
-                        onTap: () {
-                          Provider.of<BackgroundColor>(context, listen: false)
-                              .isTapButton("green");
-                        },
-                        selectedColor: Color(0xFFDED9C5),
-                        innerWidget: Container(
-                          color: Color(0xFFD7E3CB),
-                        ),
-                        isSelected: true,
-                      ),
-                      CircleSelectButton(
-                        onTap: () {
-                          Provider.of<BackgroundColor>(context, listen: false)
-                              .isTapButton("blue");
-                        },
-                        selectedColor: Color(0xFFDED9C5),
-                        innerWidget: Container(
-                          color: Color(0xFFCCD8E4),
-                        ),
-                        isSelected: true,
-                      ),
-                      CircleSelectButton(
-                        onTap: () {
-                          Provider.of<BackgroundColor>(context, listen: false)
-                              .isTapButton("black");
-                        },
-                        selectedColor: Color(0xFFDED9C5),
-                        innerWidget: Container(
-                          color: Color(0xFF161616),
-                        ),
-                        isSelected: true,
-                      ),
+                      Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: <Widget>[
+                              CircleSelectButton(
+                                onTap: () {
+                                  Provider.of<BackgroundColor>(context,
+                                      listen: false)
+                                      .isTapButton("white");
+                                },
+                                innerWidget: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                      BorderRadius.all(Radius.circular(30.5)),
+                                      color: Color(0xFFF6F6F6),
+                                    )),
+                                isSelected: Provider
+                                    .of<BackgroundColor>(context,
+                                    listen: true)
+                                    .isSelectedWhiteBack,
+                                selectedColor: Provider
+                                    .of<BackgroundColor>(context,
+                                    listen: true)
+                                    .isSelectedWhiteBack
+                                    ? Color(0xFF1C8AEC)
+                                    : Color(0xFFF6F6F6),
+                              ),
+                              CircleSelectButton(
+                                onTap: () {
+                                  Provider.of<BackgroundColor>(context,
+                                      listen: false)
+                                      .isTapButton("yellow");
+                                },
+                                selectedColor: Provider
+                                    .of<BackgroundColor>(context,
+                                    listen: true)
+                                    .isSelectedYellowBack
+                                    ? Color(0xFF1C8AEC)
+                                    : Color(0xFFDED9C5),
+                                innerWidget: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                      BorderRadius.all(Radius.circular(30.5)),
+                                      color: Color(0xFFDED9C5),
+                                    )),
+                                isSelected: Provider
+                                    .of<BackgroundColor>(context,
+                                    listen: true)
+                                    .isSelectedYellowBack,
+                              ),
+                              CircleSelectButton(
+                                onTap: () {
+                                  Provider.of<BackgroundColor>(context,
+                                      listen: false)
+                                      .isTapButton("green");
+                                },
+                                selectedColor: Provider
+                                    .of<BackgroundColor>(context,
+                                    listen: true)
+                                    .isSelectedGreenBack
+                                    ? Color(0xFF1C8AEC)
+                                    : Color(0xFFD7E3CB),
+                                innerWidget: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                      BorderRadius.all(Radius.circular(30.5)),
+                                      color: Color(0xFFD7E3CB),
+                                    )),
+                                isSelected: Provider
+                                    .of<BackgroundColor>(context,
+                                    listen: true)
+                                    .isSelectedGreenBack,
+                              ),
+                              CircleSelectButton(
+                                onTap: () {
+                                  Provider.of<BackgroundColor>(context,
+                                      listen: false)
+                                      .isTapButton("blue");
+                                },
+                                selectedColor: Provider
+                                    .of<BackgroundColor>(context,
+                                    listen: true)
+                                    .isSelectedBlueBack
+                                    ? Color(0xFF1C8AEC)
+                                    : Color(0xFFCCD8E4),
+                                innerWidget: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                      BorderRadius.all(Radius.circular(30.5)),
+                                      color: Color(0xFFCCD8E4),
+                                    )),
+                                isSelected: Provider
+                                    .of<BackgroundColor>(context,
+                                    listen: true)
+                                    .isSelectedBlueBack,
+                              ),
+                              CircleSelectButton(
+                                onTap: () {
+                                  Provider.of<BackgroundColor>(context,
+                                      listen: false)
+                                      .isTapButton("black");
+                                },
+                                selectedColor: Provider
+                                    .of<BackgroundColor>(context,
+                                    listen: true)
+                                    .isSelectedBlackBack
+                                    ? Color(0xFF1C8AEC)
+                                    : Color(0xFF161616),
+                                innerWidget: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular(30.5)),
+                                    color: Color(0xFF161616),
+                                  ),
+                                ),
+                                isSelected: Provider
+                                    .of<BackgroundColor>(context,
+                                    listen: true)
+                                    .isSelectedBlackBack,
+                              ),
+                            ],
+                          ))
                     ],
                   ),
                 ),
+
                 Container(
-                  margin: EdgeInsets.only(left: 10, top: 15),
+                  margin: EdgeInsets.only(left: 15, top: 15, right: 15),
                   child: Row(
                     children: <Widget>[
-                      Text("行距",
+                      Text("翻页",
                           style: TextStyle(color: Colors.grey, fontSize: 16)),
-                      CircleSelectButton(
-                        onTap: () {
-                          Provider.of<FontSpace>(context, listen: false)
-                              .setLargeFontSpace();
-                        },
-                        isSelected:
-                            Provider.of<FontSpace>(context, listen: true)
-                                .tapLargeFontSpace,
-                        innerWidget: Image.asset("img/font_space_large.png",
-                            color: Provider.of<FontSpace>(context, listen: true)
+                      Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: <Widget>[
+                              IsOnTapButton(title: "仿真", isTap: false),
+                              IsOnTapButton(title: "覆盖", isTap: false),
+                              IsOnTapButton(title: "平移", isTap: false),
+                              IsOnTapButton(title: "上下", isTap: false),
+                            ],
+                          ))
+                    ],
+                  ),
+                ),
+
+                Container(
+                  margin: EdgeInsets.only(left: 15, top: 15, right: 15),
+                  child: Row(
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.only(right: 5),
+                        child: Text("行距",
+                            style: TextStyle(color: Colors.grey, fontSize: 16)),
+                      ),
+                      Expanded(
+                          child: Row(
+                            children: <Widget>[
+                              CircleSelectButton(
+                                onTap: () {
+                                  Provider.of<FontSpace>(context, listen: false)
+                                      .setLargeFontSpace();
+                                },
+                                isSelected:
+                                Provider
+                                    .of<FontSpace>(context, listen: true)
+                                    .tapLargeFontSpace,
+                                innerWidget: Image.asset(
+                                    "img/font_space_large.png",
+                                    color: Provider
+                                        .of<FontSpace>(context,
+                                        listen: true)
+                                        .tapLargeFontSpace
+                                        ? Color(0xFF1C8AEC)
+                                        : Color(0xFFF6F6F6)),
+                                selectedColor:
+                                Provider
+                                    .of<FontSpace>(context, listen: true)
                                     .tapLargeFontSpace
-                                ? Color(0xFF1C8AEC)
-                                : Color(0xFFF6F6F6)),
-                        selectedColor:
-                            Provider.of<FontSpace>(context, listen: true)
-                                    .tapLargeFontSpace
-                                ? Color(0xFF1C8AEC)
-                                : Color(0xFFF6F6F6),
-                      ),
-                      CircleSelectButton(
-                        onTap: () {
-                          Provider.of<FontSpace>(context, listen: false)
-                              .setMidFontSpace();
-                        },
-                        isSelected:
-                            Provider.of<FontSpace>(context, listen: true)
-                                .tapMidFontSpace,
-                        innerWidget: Image.asset("img/font_space_large.png",
-                            color: Provider.of<FontSpace>(context, listen: true)
+                                    ? Color(0xFF1C8AEC)
+                                    : Color(0xFFF6F6F6),
+                              ),
+                              CircleSelectButton(
+                                onTap: () {
+                                  Provider.of<FontSpace>(context, listen: false)
+                                      .setMidFontSpace();
+                                },
+                                isSelected:
+                                Provider
+                                    .of<FontSpace>(context, listen: true)
+                                    .tapMidFontSpace,
+                                innerWidget: Image.asset(
+                                    "img/font_space_large.png",
+                                    color: Provider
+                                        .of<FontSpace>(context,
+                                        listen: true)
+                                        .tapMidFontSpace
+                                        ? Color(0xFF1C8AEC)
+                                        : Color(0xFFF6F6F6)),
+                                selectedColor:
+                                Provider
+                                    .of<FontSpace>(context, listen: true)
                                     .tapMidFontSpace
-                                ? Color(0xFF1C8AEC)
-                                : Color(0xFFF6F6F6)),
-                        selectedColor:
-                            Provider.of<FontSpace>(context, listen: true)
-                                    .tapMidFontSpace
-                                ? Color(0xFF1C8AEC)
-                                : Color(0xFFF6F6F6),
-                      ),
-                      CircleSelectButton(
-                        onTap: () {
-                          Provider.of<FontSpace>(context, listen: false)
-                              .setSmallFontSpace();
-                        },
-                        isSelected:
-                            Provider.of<FontSpace>(context, listen: true)
-                                .tapSmallFontSpace,
-                        innerWidget: Image.asset("img/font_space_large.png",
-                            color: Provider.of<FontSpace>(context, listen: true)
+                                    ? Color(0xFF1C8AEC)
+                                    : Color(0xFFF6F6F6),
+                              ),
+                              CircleSelectButton(
+                                onTap: () {
+                                  Provider.of<FontSpace>(context, listen: false)
+                                      .setSmallFontSpace();
+                                },
+                                isSelected:
+                                Provider
+                                    .of<FontSpace>(context, listen: true)
+                                    .tapSmallFontSpace,
+                                innerWidget: Image.asset(
+                                    "img/font_space_large.png",
+                                    color: Provider
+                                        .of<FontSpace>(context,
+                                        listen: true)
+                                        .tapSmallFontSpace
+                                        ? Color(0xFF1C8AEC)
+                                        : Color(0xFFF6F6F6)),
+                                selectedColor:
+                                Provider
+                                    .of<FontSpace>(context, listen: true)
                                     .tapSmallFontSpace
-                                ? Color(0xFF1C8AEC)
-                                : Color(0xFFF6F6F6)),
-                        selectedColor:
-                            Provider.of<FontSpace>(context, listen: true)
-                                    .tapSmallFontSpace
-                                ? Color(0xFF1C8AEC)
-                                : Color(0xFFF6F6F6),
-                      ),
+                                    ? Color(0xFF1C8AEC)
+                                    : Color(0xFFF6F6F6),
+                              ),
+                            ],
+                          ))
                     ],
                   ),
                 ),
@@ -538,7 +673,7 @@ class _ReaderMenuState extends State<ReaderMenu>
           SizedBox(height: 5),
           Text(title,
               style:
-                  TextStyle(fontSize: fixedFontSize(12), color: SQColor.white)),
+              TextStyle(fontSize: fixedFontSize(12), color: SQColor.white)),
         ],
       ),
     );
@@ -548,54 +683,55 @@ class _ReaderMenuState extends State<ReaderMenu>
     return Container(
       child: Drawer(
           child: Column(
-        children: <Widget>[
-          Container(
-            color: Color(0xFFDED9C5),
-            child: Row(
-              children: <Widget>[
-                Image.asset("name"),
-                Column(
-                  children: <Widget>[Text("那年盛夏微微甜"), Text("作者名")],
-                )
-              ],
-            ),
-          ),
-          Container(
-            color: Color(0xFFDED9C5),
-            child: Row(
-              children: <Widget>[
-                Expanded(child: Text("已完结 共84章")),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
+            children: <Widget>[
+              Container(
+                color: Color(0xFFDED9C5),
+                child: Row(
+                  children: <Widget>[
+                    Image.asset("name"),
+                    Column(
+                      children: <Widget>[Text("那年盛夏微微甜"), Text("作者名")],
+                    )
+                  ],
+                ),
+              ),
+              Container(
+                color: Color(0xFFDED9C5),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(child: Text("已完结 共84章")),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
 //                          this.widget.isReversed = !this.widget.isReversed;
-                      this.widget.index =
-                          this.widget.chapters.length - 1 - this.widget.index;
-                      this.widget.chapters =
-                          this.widget.chapters.reversed.toList();
-                    });
+                          this.widget.index =
+                              this.widget.chapters.length - 1 - this.widget
+                                  .index;
+                          this.widget.chapters =
+                              this.widget.chapters.reversed.toList();
+                        });
+                      },
+                      child: Text("正序"),
+                    )
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: this.widget.chapters.length,
+                  itemBuilder: (context, index) {
+                    return itemView(index);
                   },
-                  child: Text("正序"),
-                )
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.separated(
-              itemCount: this.widget.chapters.length,
-              itemBuilder: (context, index) {
-                return itemView(index);
-              },
-              separatorBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-                  child: Divider(height: 1, color: Colors.black),
-                );
-              },
-            ),
-          )
-        ],
-      )),
+                  separatorBuilder: (context, index) {
+                    return Padding(
+                      padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                      child: Divider(height: 1, color: Colors.black),
+                    );
+                  },
+                ),
+              )
+            ],
+          )),
     );
   }
 
@@ -627,6 +763,7 @@ class _ReaderMenuState extends State<ReaderMenu>
   }
 }
 
+/// 亮度调节按钮
 class _SettingMenuScreenBrightItem extends StatefulWidget {
   @override
   __SettingMenuScreenBrightItemState createState() =>
@@ -640,23 +777,24 @@ class __SettingMenuScreenBrightItemState
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
+        margin: EdgeInsets.fromLTRB(12, 0, 0, 0),
+        child: Expanded(
 //      width: double.infinity,
 //      width: double.infinity,
-      height: 70,
-      child: Row(
-        children: <Widget>[
-          Padding(
-            child: Icon(
-              Icons.brightness_low,
-              color: Colors.grey,
-              size: 24,
-            ),
-            padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-          ),
-          Expanded(
-            child: Padding(
-                padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+
+          child: Row(
+            children: <Widget>[
+              Padding(
+                child: Icon(
+                  Icons.brightness_low,
+                  color: Colors.grey,
+                  size: 20,
+                ),
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              ),
+              Container(
+//                padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
                 child: SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     valueIndicatorColor: Color(0xFFFFFFFF),
@@ -664,7 +802,7 @@ class __SettingMenuScreenBrightItemState
                     activeTrackColor: Color(0xFFFFFFFF),
                     activeTickMarkColor: Colors.transparent,
                     inactiveTickMarkColor: Colors.transparent,
-                    trackHeight: 2.5,
+                    trackHeight: 2.0,
                     thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
                   ),
                   child: Slider(
@@ -677,141 +815,38 @@ class __SettingMenuScreenBrightItemState
                       setState(() {
                         _currentScreenBrightness = value;
                         lightScreen.Screen.setBrightness(value);
-//                    NovelConfigManager().setUserBrightnessConfig(value);
+                        NovelConfigManager().setUserBrightnessConfig(value);
                       });
                     },
                   ),
-                )),
-            flex: 1,
+                ),
+              ),
+              Padding(
+                child: Icon(
+                  Icons.brightness_high,
+                  color: Colors.grey,
+                  size: 20,
+                ),
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              ),
+            ],
           ),
-          Padding(
-            child: Icon(
-              Icons.brightness_high,
-              color: Colors.grey,
-              size: 24,
-            ),
-            padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 设置字体大小按钮
-Widget setFontSizeButton(context) {
-  /// 按钮内容文字
-  String title;
-
-  /// 是否已点击到最大值
-  bool isTapToMax;
-
-  return GestureDetector(
-    onTap: () {
-      Provider.of<fontSize>(context, listen: false).addFontSize();
-    },
-    child: Container(
-      alignment: Alignment.center,
-      width: 100,
-      height: 35,
-      decoration: BoxDecoration(
-        color: Color(0xFF4F4F4F),
-        borderRadius: BorderRadius.all(Radius.circular(34)),
-      ),
-      child: Text("A+"),
-    ),
-  );
-}
-
-/// 设置字体大小按钮
-Widget setFontSizeButton1(context) {
-  /// 按钮内容文字
-  String title;
-
-  /// 是否已点击到最大值
-  bool isTapToMax;
-
-  return GestureDetector(
-    onTap: () {
-      Provider.of<fontSize>(context, listen: false).downFontSize();
-    },
-    child: Container(
-      alignment: Alignment.center,
-      width: 100,
-      height: 35,
-      decoration: BoxDecoration(
-        color: Color(0xFF4F4F4F),
-        borderRadius: BorderRadius.all(Radius.circular(34)),
-      ),
-      child: Text("A+"),
-    ),
-  );
-}
-
-/// 封装一个是否点击的按钮
-class isOnTapButton extends StatefulWidget {
-  final String title;
-
-  const isOnTapButton({Key key, this.title}) : super(key: key);
-
-  @override
-  _isOnTapButtonState createState() => _isOnTapButtonState();
-}
-
-class _isOnTapButtonState extends State<isOnTapButton> {
-  bool isTap = false;
-
-  var onColor = Color(0xFF1C8AEC);
-  var offColor = Color(0xFF8F8F8F);
-  Color tapColor = Color(0xFF1C8AEC);
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (isTap) {
-            isTap = false;
-          } else {
-            isTap = true;
-          }
-          Provider.of<NightChange>(context, listen: false).isTapButton(isTap);
-          Provider.of<NightChange>(context, listen: false)
-              .tapChangeTextColor(isTap);
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.fromLTRB(15, 5, 15, 5),
-        decoration: BoxDecoration(
-          //设置四周圆角 角度 这里的角度应该为 父Container height 的一半
-          borderRadius: BorderRadius.all(Radius.circular(30.5)),
-          //设置四周边框
-          border: new Border.all(
-              width: 1, color: isTap ? Color(0xFF1C8AEC) : Color(0xFF8F8F8F)),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          widget.title,
-          style: TextStyle(
-              color: isTap ? Color(0xFF1C8AEC) : Color(0xFF8F8F8F),
-              fontSize: 15),
-        ),
-      ),
-    );
+        ));
   }
 }
 
 /// 右上角弹出菜单
 Widget onPopMenu() {
   return PopupMenuButton(
-      itemBuilder: (BuildContext context) => <PopupMenuItem<String>>[
-            new PopupMenuItem<String>(
-                value: 'value01', child: new Text('Item One')),
-            new PopupMenuItem<String>(
-                value: 'value02', child: new Text('Item Two')),
-            new PopupMenuItem<String>(
-                value: 'value03', child: new Text('Item Three')),
-            new PopupMenuItem<String>(
-                value: 'value04', child: new Text('I am Item Four'))
-          ]);
+      itemBuilder: (BuildContext context) =>
+      <PopupMenuItem<String>>[
+        new PopupMenuItem<String>(
+            value: 'value01', child: new Text('Item One')),
+        new PopupMenuItem<String>(
+            value: 'value02', child: new Text('Item Two')),
+        new PopupMenuItem<String>(
+            value: 'value03', child: new Text('Item Three')),
+        new PopupMenuItem<String>(
+            value: 'value04', child: new Text('I am Item Four'))
+      ]);
 }

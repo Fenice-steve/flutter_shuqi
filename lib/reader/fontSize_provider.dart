@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class fontSize with ChangeNotifier{
 
@@ -24,6 +25,7 @@ class fontSize with ChangeNotifier{
     if(_fontSizeSet>16 && _fontSizeSet<28){
       _isTapToMin = false;
     }
+    _spSetTextSizeValue(_fontSizeSet);
     notifyListeners();
   }
 
@@ -38,7 +40,14 @@ class fontSize with ChangeNotifier{
     if(_fontSizeSet>16 && _fontSizeSet<28){
       _isTapToMax =false;
     }
+    _spSetTextSizeValue(_fontSizeSet);
     notifyListeners();
+  }
+
+
+  _spSetTextSizeValue(double value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('textSizeValue', value);
   }
 
 }

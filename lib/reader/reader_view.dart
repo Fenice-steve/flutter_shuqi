@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:shuqi/public.dart';
 import 'package:shuqi/reader/back_color_change_provider.dart';
@@ -34,12 +35,9 @@ class ReaderView extends StatelessWidget {
 
                 Provider.of<BackgroundColor>(context, listen: true)
                     .isTapColor
-//            Colors.white
-
             )),
         ReaderOverlayer(
             article: article, page: page, topSafeHeight: topSafeHeight),
-
         Container(
             child: buildContent(article, page, context),
             color: Colors.transparent),
@@ -66,12 +64,10 @@ class ReaderView extends StatelessWidget {
                 style: TextStyle(
 
                     /// 这里修改字号
-//            fontSize: fixedFontSize(ReaderConfig.instance.fontSize)
                     fontSize: Provider.of<fontSize>(context, listen: true)
                         .fontSizeSet,
                     color: Provider.of<BackgroundColor>(context, listen: true)
                         .isChangeTextColor,
-
                     /// 这里修改间距
                     height: Provider.of<FontSpace>(context, listen: true)
                         .fontSpaceSet))
@@ -81,4 +77,11 @@ class ReaderView extends StatelessWidget {
       ),
     );
   }
+
+  Future<double> _spGetTextSizeValue() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var value = prefs.getDouble('textSizeValue');
+    return value ?? 18;
+  }
+
 }

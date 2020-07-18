@@ -20,10 +20,10 @@ class _SetFontSizeButtonState extends State<SetFontSizeButton> {
     return GestureDetector(
       onTap: widget.onTap,
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 7),
+        margin: EdgeInsets.fromLTRB( 12,0,0,0),
         alignment: Alignment.center,
-        width: 150,
-        height: 35,
+        width: 160,
+        height: 40,
         decoration: BoxDecoration(
           color: widget.isTapFinish?Color(0xFF3C3C3C) :Color(0xFF4F4F4F),
           borderRadius: BorderRadius.all(Radius.circular(34)),
