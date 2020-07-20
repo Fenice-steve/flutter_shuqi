@@ -122,7 +122,6 @@ class _ReaderMenuState extends State<ReaderMenu>
             Expanded(child: Container()),
             Container(
               width: 50,
-//              child: Image.asset('img/read_icon_voice.png'),
               /// 改为汉字
               child: Text(
                 "下载",
@@ -131,15 +130,9 @@ class _ReaderMenuState extends State<ReaderMenu>
             ),
             Container(
               width: 60,
-//              child: Image.asset('img/read_icon_voice.png'),
-              /// 改为汉字
               child: Text("加入书架", style: TextStyle(color: SQColor.white)),
             ),
-//            GestureDetector(
-//              onTap: (){
-//                onPopMenu();
-//              },
-//              child:
+
 
             Container(
               width: 44,
@@ -281,9 +274,6 @@ class _ReaderMenuState extends State<ReaderMenu>
       children: <Widget>[
         GestureDetector(
           onTap: () {
-//            setState(() {
-//              isTipVisible=false;
-//            });
           this.widget.onTypeTap(1);
           },
 
@@ -299,18 +289,6 @@ class _ReaderMenuState extends State<ReaderMenu>
         ),
       ],
     );
-  }
-
-  /// 延迟打开drawer
-  Future openDrawer() async {
-//    Timer(Duration(milliseconds: 300), () {
-    Future.delayed(
-        Duration(seconds: 3), () {
-      widget._scaffoldKey.currentState.openDrawer();
-    }
-    );
-    print("延迟三秒执行");
-//    });
   }
 
   /// 底部抽屉
